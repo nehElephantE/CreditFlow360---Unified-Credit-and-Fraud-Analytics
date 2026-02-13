@@ -1,0 +1,84 @@
+import sys
+import os
+from pathlib import Path
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from src.database.db_connection import DatabaseConnection
+
+def main():
+    print("\n" + "="*60)
+    print("🚀 CREDITFLOW360 - SCHEMA CREATION")
+    print("="*60)
+    
+    db = DatabaseConnection()
+    
+    print("\n📁 Step 1: Creating database...")
+    if db.create_database():
+        print(f"   ✅ Database 'creditflow360' created/verified")
+    else:
+        print("   ❌ Failed to create database")
+        return
+    
+    print("\n🔌 Step 2: Switching to database...")
+    db.use_database('creditflow360')
+    
+    try:
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT DATABASE()")
+            current_db = cursor.fetchone()[0]
+            print(f"   ✅ Connected to database: {current_db}")
+    except Exception as e:
+        print(f"   ❌ Failed to connect: {e}")
+        return
+    
+    print("\n📖 Step 3: Reading schema file...")
+    schema_path = Path('src/database/schema_creation.sql')
+    
+    if not schema_path.exists():
+        print(f"❌ Schema file not found: {schema_path}")
+        return
+    
+    with open(schema_path, 'r', encoding='utf-8') as f:
+        schema_sql = f.read()
+    
+    print(f"✅ Schema file loaded ({len(schema_sql)} characters)")
+    
+    print("\n⚙️  Step 4: Creating tables...")
+    statements = schema_sql.split(';')
+    success_count = 0
+    error_count = 0
+    
+    for i, statement in enumerate(statements):
+        statement = statement.strip()
+        if statement and not statement.startswith('--') and 'DELIMITER' not in statement:
+            try:
+                db.execute_query(statement)
+                success_count += 1
+                if i % 10 == 0:
+                    print(f"   Progress: {i}/{len(statements)} statements executed")
+            except Exception as e:
+                error_count += 1
+                if "already exists" not in str(e).lower():
+                    error_msg = str(e)
+                    print(f"   ⚠️  Warning on statement {i+1}: {error_msg[:100]}")
+    
+    print(f"\n✅ Tables created: {success_count}")
+    print(f"⚠️  Warnings: {error_count}")
+    
+    print("\n🔍 Step 5: Verifying tables...")
+    try:
+        result = db.query_to_dataframe("SHOW TABLES")
+        print(f"📋 Tables in database ({len(result)}):")
+        for _, row in result.iterrows():
+            print(f"   • {row.iloc[0]}")
+    except Exception as e:
+        print(f"⚠️  Could not verify tables: {e}")
+    
+    print("\n" + "="*60)
+    print("✅ SCHEMA CREATION COMPLETE!")
+    print("="*60)
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,75 @@
+{
+  "etl_name": "CreditFlow360_ETL",
+  "etl_version": "1.0.0",
+  "start_time": "2026-02-13T22:58:58.975497",
+  "end_time": "2026-02-14T01:28:43.844310",
+  "duration_seconds": 8984.868813,
+  "pipeline_results": {
+    "date_dimension": {
+      "step": "date_dimension",
+      "status": "SUCCESS",
+      "records_loaded": "1826",
+      "duration": 0
+    },
+    "customer_dimension": {
+      "status": "SUCCESS",
+      "records_extracted": 25000,
+      "records_transformed": 25000,
+      "records_loaded": 25000,
+      "quality_score": 96.43,
+      "step": "customer_dimension"
+    },
+    "loan_fact": {
+      "status": "SUCCESS",
+      "records_extracted": 75000,
+      "records_transformed": 67530,
+      "records_loaded": 10000,
+      "quality_score": 88.22,
+      "step": "loan_fact"
+    },
+    "transaction_fact": {
+      "status": "SUCCESS",
+      "records_extracted": 300004,
+      "records_transformed": 299970,
+      "records_loaded": 299957,
+      "quality_score": 94.96,
+      "step": "transaction_fact"
+    },
+    "fraud_alert_fact": {
+      "status": "SUCCESS",
+      "records_extracted": 171,
+      "records_transformed": 171,
+      "records_loaded": 171,
+      "quality_score": 84.95,
+      "step": "fraud_alert_fact"
+    },
+    "verification": {
+      "dim_date": "1826",
+      "dim_customer": "25000",
+      "dim_product": "14",
+      "dim_branch": "25",
+      "fact_loan": "10000",
+      "fact_transaction": "299957",
+      "fact_fraud_alert": "171",
+      "orphaned_loans": "0",
+      "orphaned_transactions": "0"
+    }
+  },
+  "verification": {
+    "dim_date": "1826",
+    "dim_customer": "25000",
+    "dim_product": "14",
+    "dim_branch": "25",
+    "fact_loan": "10000",
+    "fact_transaction": "299957",
+    "fact_fraud_alert": "171",
+    "orphaned_loans": "0",
+    "orphaned_transactions": "0"
+  },
+  "configuration": {
+    "batch_size": 5000,
+    "environment": "production"
+  },
+  "overall_status": "SUCCESS",
+  "failed_steps_count": 0
+}

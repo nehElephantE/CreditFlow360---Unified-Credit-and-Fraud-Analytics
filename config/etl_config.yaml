@@ -1,0 +1,54 @@
+
+etl:
+  name: "CreditFlow360_ETL"
+  version: "1.0.0"
+  environment: "production"
+  
+  # Batch processing settings
+  batch_size: 5000
+  max_workers: 4
+  retry_attempts: 3
+  retry_delay: 5
+  
+  # File paths
+  data_paths:
+    raw: "data/raw_csv/"
+    processed: "data/processed/"
+    archives: "data/archives/"
+    logs: "logs/etl/"
+    
+  # Source files
+  source_files:
+    customers: "customers.csv"
+    loans: "loans.csv"
+    transactions: "transactions.csv"
+    fraud_alerts: "fraud_alerts.csv"
+    
+  # Target tables
+  target_tables:
+    dim_customer: "dim_customer"
+    dim_product: "dim_product"
+    dim_branch: "dim_branch"
+    dim_date: "dim_date"
+    fact_loan: "fact_loan"
+    fact_transaction: "fact_transaction"
+    fact_fraud_alert: "fact_fraud_alert"
+    etl_control: "etl_control"
+    
+  # Data quality thresholds
+  quality_thresholds:
+    min_pass_rate: 0.95
+    max_error_rate: 0.05
+    critical_columns_check: true
+    
+  # Date formats
+  date_formats:
+    - "%Y-%m-%d"
+    - "%d-%m-%Y"
+    - "%m/%d/%Y"
+    
+  # Logging
+  logging:
+    level: "INFO"
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    file: "etl_pipeline.log"

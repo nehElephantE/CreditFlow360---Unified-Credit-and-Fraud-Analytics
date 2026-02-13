@@ -1,0 +1,71 @@
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: creditflow_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-creditflow360}
+      MYSQL_USER: ${MYSQL_USER:-creditflow_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-creditflow_pass}
+    ports:
+      - "3308:3306"  # Using 3307 to avoid conflict with local MySQL
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./data:/docker-data  # Mount data directory for backups
+    networks:
+      - creditflow_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Python Application (for ETL and Analytics)
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: creditflow_app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-creditflow360}
+      MYSQL_USER: ${MYSQL_USER:-creditflow_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-creditflow_pass}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+    volumes:
+      - ./data:/app/data
+      - ./reports:/app/reports
+      - ./logs:/app/logs
+      - ./config:/app/config
+      - ./src:/app/src
+      - ./scripts:/app/scripts
+    networks:
+      - creditflow_network
+    command: tail -f /dev/null  # Keep container running for manual commands
+    # For scheduled tasks, we'll use the Makefile
+
+  # (Optional) Adminer for database management
+  adminer:
+    image: adminer:latest
+    container_name: creditflow_adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      - mysql
+    networks:
+      - creditflow_network
+
+networks:
+  creditflow_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
